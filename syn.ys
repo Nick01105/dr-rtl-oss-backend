@@ -1,0 +1,21 @@
+# OSS synthesis (Yosys) — stand-in for Dr_RTL's Synopsys DC syn.tcl.
+# Placeholders (RTL_PATH, TOP, LIB, NETLIST_OUT, AREA_RPT) are filled in by
+# run_design_oss.py before invocation.
+#
+# async2sync + dfflegalize normalize async-reset / async-load flops into the
+# synchronous FF types Nangate45 actually provides, so nothing is left
+# unmapped (which OpenSTA would otherwise black-box). write_verilog -noexpr
+# emits a purely structural netlist (no reg-typed ports), which OpenSTA's
+# Verilog reader requires.
+read_verilog -sv RTL_PATH
+hierarchy -check -top TOP
+synth -top TOP -flatten
+async2sync
+dfflegalize -cell $_DFF_P_ 01 -cell $_DFF_N_ 01 -cell $_DFF_PN0_ 01 -cell $_DFF_PN1_ 01 -cell $_DFF_PP0_ 01 -cell $_DFF_PP1_ 01
+dfflibmap -liberty LIB
+abc -liberty LIB
+setundef -zero
+splitnets
+opt_clean -purge
+tee -o AREA_RPT stat -liberty LIB
+write_verilog -noattr -noexpr NETLIST_OUT

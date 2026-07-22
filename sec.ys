@@ -1,0 +1,33 @@
+# OSS SEC (Yosys equiv) — stand-in for Dr_RTL's Cadence JasperGold SEC.
+# Compares golden RTL (GOLD_RTL, always the v0 baseline) against the revised
+# RTL (REV_RTL). `memory` lowers inferred RAM/register-files to flops and
+# `async2sync` converts async FFs so equiv_make/equiv_induct can reason about
+# them. This is the fragile leg of the port: combinational + inductive
+# equivalence handles most rewrites but can be limited on deep sequential
+# transforms (retiming, pipelining) — see README "Findings".
+read_verilog -sv GOLD_RTL
+hierarchy -top TOP
+proc
+memory
+async2sync
+flatten
+opt -full
+rename -top gold
+design -stash gold
+read_verilog -sv REV_RTL
+hierarchy -top TOP
+proc
+memory
+async2sync
+flatten
+opt -full
+rename -top gate
+design -stash gate
+design -copy-from gold -as gold gold
+design -copy-from gate -as gate gate
+equiv_make gold gate equiv
+hierarchy -top equiv
+clean -purge
+equiv_simple -seq 10
+equiv_induct -seq 20
+equiv_status -assert
