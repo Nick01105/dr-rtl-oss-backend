@@ -7,13 +7,6 @@ this replaces that layer with a fully open stack — **Yosys + OpenSTA +
 Yosys `equiv`** — so the agent loop can run without commercial licenses, and so
 every synthesis / timing / equivalence stage is scriptable and inspectable.
 
-Built as part of ongoing work on **LLM-based RTL rewriting for PPA
-optimization**. The motivation for going open isn't just cost: a black-box
-commercial flow can't be instrumented, perturbed, or ablated, which is exactly
-what studying *why* an LLM rewrite helps or fails requires.
-
-[Dr_RTL]: (link to the Dr_RTL paper / repo)
-
 ---
 
 ## What this is
